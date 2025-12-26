@@ -3,13 +3,13 @@
  */
 
 import * as fc from 'fast-check';
-import { 
-  UserContext, 
+import {
+  UserContext,
   EvaluationResult,
   SUPPORTED_PLANS,
   SUPPORTED_REGIONS,
   ALL_FEATURES,
-  FEATURE_RULES
+  FEATURE_RULES,
 } from '../index';
 
 describe('Project Setup', () => {
@@ -18,12 +18,12 @@ describe('Project Setup', () => {
     const userContext: UserContext = {
       userId: 'test-user',
       region: 'US',
-      plan: 'Pro'
+      plan: 'Pro',
     };
 
     const evaluationResult: EvaluationResult = {
       success: true,
-      features: ['advanced-analytics']
+      features: ['advanced-analytics'],
     };
 
     expect(userContext).toBeDefined();
@@ -49,13 +49,20 @@ describe('Project Setup', () => {
 
   test('property-based test framework is working', () => {
     fc.assert(
-      fc.property(fc.string(), fc.string(), fc.string(), (userId, region, plan) => {
-        const context: UserContext = { userId, region, plan };
-        // Simple property: context should have all required fields
-        return typeof context.userId === 'string' &&
-               typeof context.region === 'string' &&
-               typeof context.plan === 'string';
-      }),
+      fc.property(
+        fc.string(),
+        fc.string(),
+        fc.string(),
+        (userId, region, plan) => {
+          const context: UserContext = { userId, region, plan };
+          // Simple property: context should have all required fields
+          return (
+            typeof context.userId === 'string' &&
+            typeof context.region === 'string' &&
+            typeof context.plan === 'string'
+          );
+        }
+      ),
       { numRuns: 100 }
     );
   });

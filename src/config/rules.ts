@@ -1,5 +1,8 @@
 /**
- * Static configuration constants for the feature flag evaluator
+ * Static rule configuration for the Feature Flag Evaluator
+ *
+ * This file contains all the predefined rules that determine which features
+ * are available to users based on their plan and region attributes.
  */
 
 import { FeatureRule } from '../types';
@@ -10,7 +13,7 @@ import { FeatureRule } from '../types';
 export const SUPPORTED_PLANS = ['Basic', 'Pro'] as const;
 
 /**
- * Supported regions
+ * Supported user regions
  */
 export const SUPPORTED_REGIONS = ['US', 'EU'] as const;
 
@@ -30,7 +33,10 @@ export const ALL_FEATURES = [
 ] as const;
 
 /**
- * Static feature rules that map user attributes to features
+ * Static feature rules that map user attributes to enabled features
+ *
+ * Rules are evaluated based on user context (plan, region) and the union
+ * of all matching rules determines the final set of enabled features.
  */
 export const FEATURE_RULES: FeatureRule[] = [
   {
@@ -54,10 +60,3 @@ export const FEATURE_RULES: FeatureRule[] = [
     features: ['gdpr-tools', 'eu-payment-gateway'],
   },
 ];
-
-/**
- * Type definitions for supported values
- */
-export type SupportedPlan = (typeof SUPPORTED_PLANS)[number];
-export type SupportedRegion = (typeof SUPPORTED_REGIONS)[number];
-export type FeatureIdentifier = (typeof ALL_FEATURES)[number];

@@ -78,5 +78,5 @@ export enum EvaluationError {
   INVALID_USER_ID = 'Invalid or empty userId',
   UNSUPPORTED_REGION = 'Unsupported region',
   UNSUPPORTED_PLAN = 'Unsupported plan',
-  VALIDATION_FAILED = 'Input validation failed'
+  VALIDATION_FAILED = 'Input validation failed',
 }

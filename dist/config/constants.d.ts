@@ -21,7 +21,7 @@ export declare const FEATURE_RULES: FeatureRule[];
 /**
  * Type definitions for supported values
  */
-export type SupportedPlan = typeof SUPPORTED_PLANS[number];
-export type SupportedRegion = typeof SUPPORTED_REGIONS[number];
-export type FeatureIdentifier = typeof ALL_FEATURES[number];
+export type SupportedPlan = (typeof SUPPORTED_PLANS)[number];
+export type SupportedRegion = (typeof SUPPORTED_REGIONS)[number];
+export type FeatureIdentifier = (typeof ALL_FEATURES)[number];
 //# sourceMappingURL=constants.d.ts.map

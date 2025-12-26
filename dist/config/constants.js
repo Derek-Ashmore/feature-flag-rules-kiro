@@ -24,7 +24,7 @@ exports.ALL_FEATURES = [
     'premium-support',
     'standard-support',
     'us-compliance-tools',
-    'us-payment-gateway'
+    'us-payment-gateway',
 ];
 /**
  * Static feature rules that map user attributes to features
@@ -32,31 +32,23 @@ exports.ALL_FEATURES = [
 exports.FEATURE_RULES = [
     {
         id: 'pro-plan-features',
-        conditions: [
-            { attribute: 'plan', operator: 'equals', value: 'Pro' }
-        ],
-        features: ['advanced-analytics', 'premium-support', 'api-access']
+        conditions: [{ attribute: 'plan', operator: 'equals', value: 'Pro' }],
+        features: ['advanced-analytics', 'premium-support', 'api-access'],
     },
     {
         id: 'basic-plan-features',
-        conditions: [
-            { attribute: 'plan', operator: 'equals', value: 'Basic' }
-        ],
-        features: ['basic-dashboard', 'standard-support']
+        conditions: [{ attribute: 'plan', operator: 'equals', value: 'Basic' }],
+        features: ['basic-dashboard', 'standard-support'],
     },
     {
         id: 'us-region-features',
-        conditions: [
-            { attribute: 'region', operator: 'equals', value: 'US' }
-        ],
-        features: ['us-payment-gateway', 'us-compliance-tools']
+        conditions: [{ attribute: 'region', operator: 'equals', value: 'US' }],
+        features: ['us-payment-gateway', 'us-compliance-tools'],
     },
     {
         id: 'eu-region-features',
-        conditions: [
-            { attribute: 'region', operator: 'equals', value: 'EU' }
-        ],
-        features: ['gdpr-tools', 'eu-payment-gateway']
-    }
+        conditions: [{ attribute: 'region', operator: 'equals', value: 'EU' }],
+        features: ['gdpr-tools', 'eu-payment-gateway'],
+    },
 ];
 //# sourceMappingURL=constants.js.map

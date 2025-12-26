@@ -42,7 +42,44 @@ npm install
 - `npm run test:watch` - Run tests in watch mode
 - `npm run test:coverage` - Run tests with coverage report
 - `npm run lint` - Run ESLint
+- `npm run lint:fix` - Run ESLint with auto-fix
+- `npm run format` - Format code with Prettier
+- `npm run format:check` - Check code formatting
+- `npm run type-check` - Run TypeScript type checking
+- `npm run ci:check` - Run all quality checks (lint, format, type-check, test)
 - `npm run clean` - Remove compiled output
+
+## Code Quality
+
+The project enforces code quality through multiple automated checks:
+
+### Linting
+- **ESLint** with TypeScript support
+- **Prettier** for consistent code formatting
+- Strict rules for type safety and code consistency
+
+### Testing
+- **Unit tests** for specific examples and edge cases
+- **Property-based tests** for comprehensive input coverage
+- **Coverage thresholds**: 80% minimum for statements, branches, functions, and lines
+
+### Continuous Integration
+- **GitHub Actions** workflows for automated quality checks
+- **Pull request validation** with linting, formatting, type checking, and testing
+- **Coverage reporting** with Codecov integration
+- **Automated formatting checks** to ensure consistent code style
+
+### Quality Commands
+```bash
+# Run all quality checks
+npm run ci:check
+
+# Individual checks
+npm run lint          # Check code style and potential issues
+npm run format:check  # Verify code formatting
+npm run type-check    # Validate TypeScript types
+npm run test:coverage # Run tests with coverage report
+```
 
 ### Core Interfaces
 
