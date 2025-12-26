@@ -15,108 +15,28 @@ A minimal feature flag evaluator.
 * Return enabled features
 * Rules are static (e.g., Pro users get Feature X)
 
-## Project Structure
-
-```
-feature-flag-rules-kiro/
-├── .git/                    # Git version control
-├── .kiro/                   # Kiro IDE configuration
-│   ├── specs/              # Feature specifications
-│   └── steering/           # AI assistant guidance documents
-├── .vscode/                # VS Code settings
-├── src/                    # TypeScript source code
-│   ├── types/              # Core interfaces and types
-│   ├── config/             # Configuration constants
-│   └── __tests__/          # Test files
-├── dist/                   # Compiled JavaScript output
-├── coverage/               # Test coverage reports
-├── package.json            # Node.js dependencies and scripts
-├── tsconfig.json           # TypeScript configuration
-├── jest.config.js          # Jest testing configuration
-├── .eslintrc.js           # ESLint configuration
-├── LICENSE                 # MIT License
-└── README.md              # This file
-```
-
-## Development Setup
-
-### Prerequisites
-- Node.js (v18 or higher)
-- npm or yarn
+## Quick Start
 
 ### Installation
 ```bash
 npm install
 ```
 
-### Available Scripts
-- `npm run build` - Compile TypeScript to JavaScript
-- `npm test` - Run all tests
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:coverage` - Run tests with coverage report
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Run ESLint with auto-fix
-- `npm run format` - Format code with Prettier
-- `npm run format:check` - Check code formatting
-- `npm run type-check` - Run TypeScript type checking
-- `npm run ci:check` - Run all quality checks (lint, format, type-check, test)
-- `npm run clean` - Remove compiled output
-
-## Code Quality
-
-The project enforces code quality through multiple automated checks:
-
-### Linting
-- **ESLint** with TypeScript support
-- **Prettier** for consistent code formatting
-- Strict rules for type safety and code consistency
-
-### Testing
-- **Unit tests** for specific examples and edge cases
-- **Property-based tests** for comprehensive input coverage
-- **Coverage thresholds**: 80% minimum for statements, branches, functions, and lines
-
-### Continuous Integration
-- **GitHub Actions** workflows for automated quality checks
-- **Pull request validation** with linting, formatting, type checking, and testing
-- **Coverage reporting** with Codecov integration
-- **Automated formatting checks** to ensure consistent code style
-
-### Quality Commands
+### Basic Usage
 ```bash
+# Run tests
+npm test
+
+# Build the project
+npm run build
+
 # Run all quality checks
 npm run ci:check
-
-# Individual checks
-npm run lint          # Check code style and potential issues
-npm run format:check  # Verify code formatting
-npm run type-check    # Validate TypeScript types
-npm run test:coverage # Run tests with coverage report
 ```
 
-### Core Interfaces
+## For Developers
 
-The project defines several key interfaces:
-
-- **UserContext**: Input data containing userId, region, and plan
-- **EvaluationResult**: Output containing success status and enabled features
-- **FeatureRule**: Static rules that map user attributes to features
-- **FeatureFlagEvaluator**: Main interface for feature flag evaluation
-
-### Static Configuration
-
-The system supports:
-- **Plans**: Basic, Pro
-- **Regions**: US, EU
-- **Features**: 9 predefined features including analytics, support, and payment gateways
-
-## Testing
-
-The project uses Jest for unit testing and fast-check for property-based testing:
-
-- Unit tests validate specific examples and edge cases
-- Property-based tests verify universal properties across many inputs
-- Both approaches ensure comprehensive coverage
+For detailed development information including project structure, setup instructions, code quality guidelines, and testing strategies, see the [Developer Guide](./DEVELOPER_GUIDE.md).
 
 ## License
 
@@ -128,5 +48,6 @@ This project demonstrates spec-driven development using Kiro IDE:
 - All features are specified before implementation
 - Clear requirements ensure testable behavior
 - Minimal viable implementation focuses on core functionality first
+
 Feature flag rules engine to illustrate spec-driven development using Kiro.
 
