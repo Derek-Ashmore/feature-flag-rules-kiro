@@ -3,13 +3,65 @@
  */
 
 import { InputValidatorImpl } from '../validation/InputValidator';
-import { UserContext, EvaluationError } from '../types';
+import {
+  UserContext,
+  EvaluationError,
+  FeatureFlagConfiguration,
+} from '../types';
 
 describe('InputValidator', () => {
   let validator: InputValidatorImpl;
+  let testConfiguration: FeatureFlagConfiguration;
 
   beforeEach(() => {
     validator = new InputValidatorImpl();
+
+    // Create a test configuration that matches the original static configuration
+    testConfiguration = {
+      supportedPlans: ['Basic', 'Pro'],
+      supportedRegions: ['US', 'EU'],
+      features: [
+        { id: 'advanced-analytics', name: 'Advanced Analytics' },
+        { id: 'premium-support', name: 'Premium Support' },
+        { id: 'api-access', name: 'API Access' },
+        { id: 'basic-dashboard', name: 'Basic Dashboard' },
+        { id: 'standard-support', name: 'Standard Support' },
+        { id: 'us-payment-gateway', name: 'US Payment Gateway' },
+        { id: 'us-compliance-tools', name: 'US Compliance Tools' },
+        { id: 'gdpr-tools', name: 'GDPR Tools' },
+        { id: 'eu-payment-gateway', name: 'EU Payment Gateway' },
+      ],
+      rules: [
+        {
+          id: 'pro-plan-features',
+          conditions: [{ attribute: 'plan', operator: 'equals', value: 'Pro' }],
+          features: ['advanced-analytics', 'premium-support', 'api-access'],
+        },
+        {
+          id: 'basic-plan-features',
+          conditions: [
+            { attribute: 'plan', operator: 'equals', value: 'Basic' },
+          ],
+          features: ['basic-dashboard', 'standard-support'],
+        },
+        {
+          id: 'us-region-features',
+          conditions: [
+            { attribute: 'region', operator: 'equals', value: 'US' },
+          ],
+          features: ['us-payment-gateway', 'us-compliance-tools'],
+        },
+        {
+          id: 'eu-region-features',
+          conditions: [
+            { attribute: 'region', operator: 'equals', value: 'EU' },
+          ],
+          features: ['gdpr-tools', 'eu-payment-gateway'],
+        },
+      ],
+    };
+
+    validator.setConfiguration(testConfiguration);
   });
 
   describe('Valid inputs', () => {
@@ -413,7 +465,7 @@ describe('InputValidator', () => {
 
   describe('Boundary conditions for supported values', () => {
     test('should accept exact supported region values', () => {
-      const supportedRegions = ['US', 'EU'];
+      const supportedRegions = testConfiguration.supportedRegions;
 
       supportedRegions.forEach(region => {
         const context: UserContext = {
@@ -430,7 +482,7 @@ describe('InputValidator', () => {
     });
 
     test('should accept exact supported plan values', () => {
-      const supportedPlans = ['Basic', 'Pro'];
+      const supportedPlans = testConfiguration.supportedPlans;
 
       supportedPlans.forEach(plan => {
         const context: UserContext = {
@@ -475,6 +527,23 @@ describe('InputValidator', () => {
         expect(result.isValid).toBe(false);
         expect(result.errors).toContain(EvaluationError.UNSUPPORTED_PLAN);
       });
+    });
+  });
+
+  describe('Configuration requirement', () => {
+    test('should require configuration to be loaded', () => {
+      const validatorWithoutConfig = new InputValidatorImpl();
+
+      const context: UserContext = {
+        userId: 'test-user',
+        region: 'US',
+        plan: 'Pro',
+      };
+
+      const result = validatorWithoutConfig.validate(context);
+
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain(EvaluationError.CONFIG_NOT_LOADED);
     });
   });
 });

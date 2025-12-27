@@ -11,14 +11,13 @@ import {
   UserContext,
   EvaluationResult,
   ValidationResult,
+  ConfigurationResult,
+  FeatureFlagConfiguration,
+  EvaluationError,
 } from './types';
 import { InputValidatorImpl } from './validation/InputValidator';
 import { RuleEngine } from './engine/RuleEngine';
-import {
-  ALL_FEATURES,
-  SUPPORTED_PLANS,
-  SUPPORTED_REGIONS,
-} from './config/constants';
+import { ConfigurationLoader } from './config/ConfigurationLoader';
 
 /**
  * Main implementation of the FeatureFlagEvaluator interface.
@@ -30,24 +29,57 @@ import {
 export class FeatureFlagEvaluator implements IFeatureFlagEvaluator {
   private readonly inputValidator: InputValidatorImpl;
   private readonly ruleEngine: RuleEngine;
+  private readonly configurationLoader: ConfigurationLoader;
+  private configuration?: FeatureFlagConfiguration;
 
   constructor() {
     this.inputValidator = new InputValidatorImpl();
     this.ruleEngine = new RuleEngine();
+    this.configurationLoader = new ConfigurationLoader();
+  }
+
+  /**
+   * Loads configuration from a YAML file.
+   *
+   * This method loads and validates configuration from YAML files,
+   * then sets up all components to use the loaded configuration.
+   *
+   * @param configPath - Path to the YAML configuration file
+   * @returns Promise resolving to configuration result
+   */
+  async loadConfiguration(configPath: string): Promise<ConfigurationResult> {
+    const result = await this.configurationLoader.loadFromFile(configPath);
+
+    if (result.success && result.configuration) {
+      this.configuration = result.configuration;
+      this.inputValidator.setConfiguration(result.configuration);
+      this.ruleEngine.setConfiguration(result.configuration);
+    }
+
+    return result;
   }
 
   /**
    * Evaluates feature flags for a given user context.
    *
    * This method orchestrates the complete evaluation process:
-   * 1. Validates the input user context
-   * 2. Evaluates applicable rules if validation passes
-   * 3. Formats and returns the result with proper deduplication and sorting
+   * 1. Validates that configuration is loaded
+   * 2. Validates the input user context
+   * 3. Evaluates applicable rules if validation passes
+   * 4. Formats and returns the result with proper deduplication and sorting
    *
    * @param context - The user context containing userId, region, and plan
    * @returns EvaluationResult with either enabled features or error information
    */
   evaluate(context: UserContext): EvaluationResult {
+    // Step 0: Check if configuration is loaded
+    if (!this.configuration) {
+      return {
+        success: false,
+        error: EvaluationError.CONFIG_NOT_LOADED,
+      };
+    }
+
     // Step 1: Validate input
     const validationResult: ValidationResult =
       this.inputValidator.validate(context);
@@ -90,8 +122,12 @@ export class FeatureFlagEvaluator implements IFeatureFlagEvaluator {
    * @returns Array of all available feature identifiers, sorted alphabetically
    */
   getAvailableFeatures(): string[] {
+    if (!this.configuration) {
+      return [];
+    }
+
     // Return a copy of the features array, sorted alphabetically
-    return [...ALL_FEATURES].sort();
+    return this.configuration.features.map(f => f.id).sort();
   }
 
   /**
@@ -103,8 +139,12 @@ export class FeatureFlagEvaluator implements IFeatureFlagEvaluator {
    * @returns Array of supported plan identifiers
    */
   getSupportedPlans(): string[] {
+    if (!this.configuration) {
+      return [];
+    }
+
     // Return a copy of the supported plans array
-    return [...SUPPORTED_PLANS];
+    return [...this.configuration.supportedPlans];
   }
 
   /**
@@ -116,7 +156,11 @@ export class FeatureFlagEvaluator implements IFeatureFlagEvaluator {
    * @returns Array of supported region identifiers
    */
   getSupportedRegions(): string[] {
+    if (!this.configuration) {
+      return [];
+    }
+
     // Return a copy of the supported regions array
-    return [...SUPPORTED_REGIONS];
+    return [...this.configuration.supportedRegions];
   }
 }

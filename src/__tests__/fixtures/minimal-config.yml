@@ -1,0 +1,22 @@
+# Minimal Feature Flag Configuration for Testing
+# Contains only basic features for simple test scenarios
+
+supportedPlans:
+  - Basic
+
+supportedRegions:
+  - US
+
+features:
+  - id: basic-feature
+    name: Basic Feature
+    description: A simple basic feature
+
+rules:
+  - id: basic-rule
+    conditions:
+      - attribute: plan
+        operator: equals
+        value: Basic
+    features:
+      - basic-feature

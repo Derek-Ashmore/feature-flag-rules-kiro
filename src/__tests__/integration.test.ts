@@ -4,16 +4,28 @@
  * These tests verify the complete evaluation flow with various user contexts
  * and test error handling across component boundaries. They ensure that
  * InputValidator, RuleEngine, and output formatting work together correctly.
+ *
+ * Note: These tests use the sample YAML configuration to maintain compatibility
+ * with the original static configuration behavior.
  */
 
+import * as path from 'path';
 import { FeatureFlagEvaluator } from '../FeatureFlagEvaluator';
 import { UserContext, EvaluationResult } from '../types';
 
 describe('Feature Flag Evaluator - Integration Tests', () => {
   let evaluator: FeatureFlagEvaluator;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     evaluator = new FeatureFlagEvaluator();
+
+    // Load the sample configuration to maintain compatibility with original tests
+    const configPath = path.join(__dirname, 'fixtures', 'sample-config.yml');
+    const loadResult = await evaluator.loadConfiguration(configPath);
+
+    if (!loadResult.success) {
+      throw new Error(`Failed to load test configuration: ${loadResult.error}`);
+    }
   });
 
   describe('Complete Evaluation Flow', () => {
@@ -199,6 +211,25 @@ describe('Feature Flag Evaluator - Integration Tests', () => {
         expect(result.error).toBe(expectedError);
         expect(result.features).toBeUndefined();
       });
+    });
+
+    it('should handle evaluation without configuration loading', () => {
+      // Create a new evaluator without loading configuration
+      const unconfiguredEvaluator = new FeatureFlagEvaluator();
+
+      const context: UserContext = {
+        userId: 'test-user',
+        region: 'US',
+        plan: 'Pro',
+      };
+
+      const result = unconfiguredEvaluator.evaluate(context);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe(
+        'Configuration not loaded - call loadConfiguration first'
+      );
+      expect(result.features).toBeUndefined();
     });
 
     it('should handle malformed context objects gracefully', () => {

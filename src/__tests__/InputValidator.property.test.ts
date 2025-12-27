@@ -5,14 +5,37 @@
 
 import * as fc from 'fast-check';
 import { InputValidatorImpl } from '../validation/InputValidator';
-import { UserContext, EvaluationError } from '../types';
-import { SUPPORTED_PLANS, SUPPORTED_REGIONS } from '../config/constants';
+import {
+  UserContext,
+  EvaluationError,
+  FeatureFlagConfiguration,
+} from '../types';
 
 describe('InputValidator Property Tests', () => {
   let validator: InputValidatorImpl;
+  let testConfiguration: FeatureFlagConfiguration;
 
   beforeEach(() => {
     validator = new InputValidatorImpl();
+
+    // Create a test configuration with dynamic values
+    testConfiguration = {
+      supportedPlans: ['Basic', 'Pro', 'Enterprise'],
+      supportedRegions: ['US', 'EU', 'ASIA'],
+      features: [
+        { id: 'feature1', name: 'Feature 1' },
+        { id: 'feature2', name: 'Feature 2' },
+      ],
+      rules: [
+        {
+          id: 'test-rule',
+          conditions: [{ attribute: 'plan', operator: 'equals', value: 'Pro' }],
+          features: ['feature1'],
+        },
+      ],
+    };
+
+    validator.setConfiguration(testConfiguration);
   });
 
   /**
@@ -35,8 +58,8 @@ describe('InputValidator Property Tests', () => {
           fc.constant(null),
           fc.constant(undefined)
         ),
-        fc.constantFrom(...SUPPORTED_REGIONS),
-        fc.constantFrom(...SUPPORTED_PLANS),
+        fc.constantFrom(...testConfiguration.supportedRegions),
+        fc.constantFrom(...testConfiguration.supportedPlans),
         (invalidUserId, region, plan) => {
           const context = {
             userId: invalidUserId,
@@ -66,11 +89,13 @@ describe('InputValidator Property Tests', () => {
     fc.assert(
       fc.property(
         fc.string({ minLength: 1 }).filter(s => s.trim().length > 0), // Valid userId
-        // Generate invalid regions (anything not in SUPPORTED_REGIONS)
+        // Generate invalid regions (anything not in testConfiguration.supportedRegions)
         fc
           .string()
-          .filter(region => !SUPPORTED_REGIONS.includes(region as any)),
-        fc.constantFrom(...SUPPORTED_PLANS),
+          .filter(
+            region => !testConfiguration.supportedRegions.includes(region)
+          ),
+        fc.constantFrom(...testConfiguration.supportedPlans),
         (userId, invalidRegion, plan) => {
           const context: UserContext = {
             userId,
@@ -100,9 +125,11 @@ describe('InputValidator Property Tests', () => {
     fc.assert(
       fc.property(
         fc.string({ minLength: 1 }).filter(s => s.trim().length > 0), // Valid userId
-        fc.constantFrom(...SUPPORTED_REGIONS),
-        // Generate invalid plans (anything not in SUPPORTED_PLANS)
-        fc.string().filter(plan => !SUPPORTED_PLANS.includes(plan as any)),
+        fc.constantFrom(...testConfiguration.supportedRegions),
+        // Generate invalid plans (anything not in testConfiguration.supportedPlans)
+        fc
+          .string()
+          .filter(plan => !testConfiguration.supportedPlans.includes(plan)),
         (userId, region, invalidPlan) => {
           const context: UserContext = {
             userId,
@@ -145,8 +172,8 @@ describe('InputValidator Property Tests', () => {
               fc.constant(null),
               fc.constant(undefined)
             ),
-            region: fc.constantFrom(...SUPPORTED_REGIONS),
-            plan: fc.constantFrom(...SUPPORTED_PLANS),
+            region: fc.constantFrom(...testConfiguration.supportedRegions),
+            plan: fc.constantFrom(...testConfiguration.supportedPlans),
           }),
           // Contexts with invalid regions
           fc.record({
@@ -155,18 +182,20 @@ describe('InputValidator Property Tests', () => {
               .filter(s => s.trim().length > 0),
             region: fc
               .string()
-              .filter(region => !SUPPORTED_REGIONS.includes(region as any)),
-            plan: fc.constantFrom(...SUPPORTED_PLANS),
+              .filter(
+                region => !testConfiguration.supportedRegions.includes(region)
+              ),
+            plan: fc.constantFrom(...testConfiguration.supportedPlans),
           }),
           // Contexts with invalid plans
           fc.record({
             userId: fc
               .string({ minLength: 1 })
               .filter(s => s.trim().length > 0),
-            region: fc.constantFrom(...SUPPORTED_REGIONS),
+            region: fc.constantFrom(...testConfiguration.supportedRegions),
             plan: fc
               .string()
-              .filter(plan => !SUPPORTED_PLANS.includes(plan as any)),
+              .filter(plan => !testConfiguration.supportedPlans.includes(plan)),
           })
         ),
         invalidContext => {
@@ -190,5 +219,23 @@ describe('InputValidator Property Tests', () => {
       ),
       { numRuns: 100 }
     );
+  });
+
+  /**
+   * Test that validator requires configuration to be loaded
+   */
+  test('should require configuration to be loaded', () => {
+    const validatorWithoutConfig = new InputValidatorImpl();
+
+    const context: UserContext = {
+      userId: 'test-user',
+      region: 'US',
+      plan: 'Pro',
+    };
+
+    const result = validatorWithoutConfig.validate(context);
+
+    expect(result.isValid).toBe(false);
+    expect(result.errors).toContain(EvaluationError.CONFIG_NOT_LOADED);
   });
 });

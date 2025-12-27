@@ -1,0 +1,23 @@
+# Invalid YAML Configuration for Error Testing
+# This file contains invalid YAML syntax
+
+supportedPlans:
+  - Basic
+  - Pro
+
+supportedRegions:
+  - US
+  - EU
+
+features:
+  - id: test-feature
+    name: Test Feature
+
+rules:
+  - id: invalid-rule
+    conditions:
+      - attribute: plan
+        operator: equals
+        value: Basic
+    features:
+      - nonexistent-feature  # This feature is not defined above

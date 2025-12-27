@@ -1,20 +1,26 @@
 /**
- * Static configuration constants for the feature flag evaluator
+ * Legacy static configuration constants for the feature flag evaluator
+ *
+ * These constants are kept for backward compatibility with existing tests
+ * but should not be used in new code. Use dynamic configuration loading instead.
  */
 
 import { FeatureRule } from '../types';
 
 /**
+ * @deprecated Use dynamic configuration loading instead
  * Supported user plans
  */
 export const SUPPORTED_PLANS = ['Basic', 'Pro'] as const;
 
 /**
+ * @deprecated Use dynamic configuration loading instead
  * Supported regions
  */
 export const SUPPORTED_REGIONS = ['US', 'EU'] as const;
 
 /**
+ * @deprecated Use dynamic configuration loading instead
  * All available features in the system
  */
 export const ALL_FEATURES = [
@@ -30,6 +36,7 @@ export const ALL_FEATURES = [
 ] as const;
 
 /**
+ * @deprecated Use dynamic configuration loading instead
  * Static feature rules that map user attributes to features
  */
 export const FEATURE_RULES: FeatureRule[] = [

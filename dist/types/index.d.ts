@@ -44,6 +44,7 @@ export interface ValidationResult {
  * Main interface for the feature flag evaluator
  */
 export interface FeatureFlagEvaluator {
+    loadConfiguration(configPath: string): Promise<ConfigurationResult>;
     evaluate(context: UserContext): EvaluationResult;
     getAvailableFeatures(): string[];
     getSupportedPlans(): string[];
@@ -54,17 +55,55 @@ export interface FeatureFlagEvaluator {
  */
 export interface RuleEngine {
     evaluateRules(context: UserContext): string[];
+    setConfiguration(configuration: FeatureFlagConfiguration): void;
 }
 /**
  * Interface for input validation component
  */
 export interface InputValidator {
     validate(context: UserContext): ValidationResult;
+    setConfiguration(configuration: FeatureFlagConfiguration): void;
+}
+/**
+ * Definition of a feature in the configuration
+ */
+export interface FeatureDefinition {
+    id: string;
+    name: string;
+    description?: string;
+}
+/**
+ * Complete feature flag configuration loaded from YAML
+ */
+export interface FeatureFlagConfiguration {
+    rules: FeatureRule[];
+    supportedPlans: string[];
+    supportedRegions: string[];
+    features: FeatureDefinition[];
+}
+/**
+ * Result of configuration loading operation
+ */
+export interface ConfigurationResult {
+    success: boolean;
+    configuration?: FeatureFlagConfiguration;
+    error?: string;
+}
+/**
+ * Interface for configuration loading component
+ */
+export interface ConfigurationLoader {
+    loadFromFile(filePath: string): Promise<ConfigurationResult>;
+    validateConfiguration(config: any): ValidationResult;
 }
 /**
  * Enumeration of possible evaluation errors
  */
 export declare enum EvaluationError {
+    CONFIG_FILE_NOT_FOUND = "Configuration file not found",
+    CONFIG_PARSE_ERROR = "Failed to parse YAML configuration",
+    CONFIG_VALIDATION_ERROR = "Configuration validation failed",
+    CONFIG_NOT_LOADED = "Configuration not loaded - call loadConfiguration first",
     MISSING_CONTEXT = "Missing or null user context",
     INVALID_USER_ID = "Invalid or empty userId",
     UNSUPPORTED_REGION = "Unsupported region",

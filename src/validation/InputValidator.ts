@@ -7,14 +7,23 @@ import {
   ValidationResult,
   InputValidator,
   EvaluationError,
+  FeatureFlagConfiguration,
 } from '../types';
-import { SUPPORTED_PLANS, SUPPORTED_REGIONS } from '../config/constants';
 
 /**
  * Implementation of the InputValidator interface
- * Validates UserContext structure and field requirements
+ * Validates UserContext structure and field requirements using dynamic configuration
  */
 export class InputValidatorImpl implements InputValidator {
+  private configuration?: FeatureFlagConfiguration;
+
+  /**
+   * Sets the configuration to use for validation
+   * @param configuration The loaded feature flag configuration
+   */
+  setConfiguration(configuration: FeatureFlagConfiguration): void {
+    this.configuration = configuration;
+  }
   /**
    * Validates a UserContext object
    * @param context - The user context to validate
@@ -22,6 +31,12 @@ export class InputValidatorImpl implements InputValidator {
    */
   validate(context: UserContext): ValidationResult {
     const errors: string[] = [];
+
+    // Check if configuration is loaded
+    if (!this.configuration) {
+      errors.push(EvaluationError.CONFIG_NOT_LOADED);
+      return { isValid: false, errors };
+    }
 
     // Check if context exists
     if (!context || context === null || context === undefined) {
@@ -85,8 +100,8 @@ export class InputValidatorImpl implements InputValidator {
       return false;
     }
 
-    // Check if region is in supported regions
-    return SUPPORTED_REGIONS.includes(region as any);
+    // Check if region is in supported regions from loaded configuration
+    return this.configuration!.supportedRegions.includes(region);
   }
 
   /**
@@ -100,7 +115,7 @@ export class InputValidatorImpl implements InputValidator {
       return false;
     }
 
-    // Check if plan is in supported plans
-    return SUPPORTED_PLANS.includes(plan as any);
+    // Check if plan is in supported plans from loaded configuration
+    return this.configuration!.supportedPlans.includes(plan);
   }
 }

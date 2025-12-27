@@ -1,23 +1,27 @@
 /**
- * Static rule configuration for the Feature Flag Evaluator
+ * Legacy static rule configuration for the Feature Flag Evaluator
  *
- * This file contains all the predefined rules that determine which features
- * are available to users based on their plan and region attributes.
+ * This file contains predefined rules that were used before dynamic configuration loading.
+ * These are kept for backward compatibility with existing tests but should not be used
+ * in new code. Use dynamic configuration loading instead.
  */
 
 import { FeatureRule } from '../types';
 
 /**
+ * @deprecated Use dynamic configuration loading instead
  * Supported user plans
  */
 export const SUPPORTED_PLANS = ['Basic', 'Pro'] as const;
 
 /**
+ * @deprecated Use dynamic configuration loading instead
  * Supported user regions
  */
 export const SUPPORTED_REGIONS = ['US', 'EU'] as const;
 
 /**
+ * @deprecated Use dynamic configuration loading instead
  * All available features in the system
  */
 export const ALL_FEATURES = [
@@ -33,6 +37,7 @@ export const ALL_FEATURES = [
 ] as const;
 
 /**
+ * @deprecated Use dynamic configuration loading instead
  * Static feature rules that map user attributes to enabled features
  *
  * Rules are evaluated based on user context (plan, region) and the union

@@ -5,14 +5,106 @@
 
 import * as fc from 'fast-check';
 import { FeatureFlagEvaluator } from '../FeatureFlagEvaluator';
-import { UserContext, EvaluationResult } from '../types';
+import {
+  UserContext,
+  EvaluationResult,
+  FeatureFlagConfiguration,
+  RuleCondition,
+} from '../types';
 import { SUPPORTED_PLANS, SUPPORTED_REGIONS } from '../config/constants';
 
 describe('FeatureFlagEvaluator Property Tests', () => {
   let evaluator: FeatureFlagEvaluator;
+  let testConfiguration: FeatureFlagConfiguration;
 
   beforeEach(() => {
     evaluator = new FeatureFlagEvaluator();
+
+    // Set up test configuration that matches the static constants
+    testConfiguration = {
+      supportedPlans: [...SUPPORTED_PLANS],
+      supportedRegions: [...SUPPORTED_REGIONS],
+      features: [
+        {
+          id: 'advanced-analytics',
+          name: 'Advanced Analytics',
+          description: 'Advanced reporting features',
+        },
+        {
+          id: 'premium-support',
+          name: 'Premium Support',
+          description: '24/7 premium support',
+        },
+        {
+          id: 'api-access',
+          name: 'API Access',
+          description: 'Full REST API access',
+        },
+        {
+          id: 'basic-dashboard',
+          name: 'Basic Dashboard',
+          description: 'Standard dashboard',
+        },
+        {
+          id: 'standard-support',
+          name: 'Standard Support',
+          description: 'Business hours support',
+        },
+        {
+          id: 'us-payment-gateway',
+          name: 'US Payment Gateway',
+          description: 'US payment processing',
+        },
+        {
+          id: 'eu-payment-gateway',
+          name: 'EU Payment Gateway',
+          description: 'EU payment processing',
+        },
+        {
+          id: 'gdpr-tools',
+          name: 'GDPR Tools',
+          description: 'EU GDPR compliance features',
+        },
+        {
+          id: 'us-compliance-tools',
+          name: 'US Compliance Tools',
+          description: 'US regulatory compliance features',
+        },
+      ],
+      rules: [
+        {
+          id: 'pro-plan-features',
+          conditions: [{ attribute: 'plan', operator: 'equals', value: 'Pro' }],
+          features: ['advanced-analytics', 'premium-support', 'api-access'],
+        },
+        {
+          id: 'basic-plan-features',
+          conditions: [
+            { attribute: 'plan', operator: 'equals', value: 'Basic' },
+          ],
+          features: ['basic-dashboard', 'standard-support'],
+        },
+        {
+          id: 'us-region-features',
+          conditions: [
+            { attribute: 'region', operator: 'equals', value: 'US' },
+          ],
+          features: ['us-payment-gateway', 'us-compliance-tools'],
+        },
+        {
+          id: 'eu-region-features',
+          conditions: [
+            { attribute: 'region', operator: 'equals', value: 'EU' },
+          ],
+          features: ['eu-payment-gateway', 'gdpr-tools'],
+        },
+      ],
+    };
+
+    // Load configuration into evaluator
+    (evaluator as any).configuration = testConfiguration;
+    (evaluator as any).inputValidator.setConfiguration(testConfiguration);
+    (evaluator as any).ruleEngine.setConfiguration(testConfiguration);
   });
 
   /**
@@ -195,6 +287,235 @@ describe('FeatureFlagEvaluator Property Tests', () => {
         }
       ),
       { numRuns: 100 }
+    );
+  });
+
+  /**
+   * Property 19: Dynamic feature query accuracy
+   * For any loaded YAML configuration, querying for available features should return exactly
+   * the Feature_Identifiers defined in the configuration
+   * Validates: Requirements 5.2
+   */
+  test('Property 19: Dynamic feature query accuracy', async () => {
+    // Feature: feature-flag-evaluator, Property 19: Dynamic feature query accuracy
+    await fc.assert(
+      fc.asyncProperty(
+        fc.record({
+          supportedPlans: fc.array(fc.string({ minLength: 1 }), {
+            minLength: 1,
+            maxLength: 5,
+          }),
+          supportedRegions: fc.array(fc.string({ minLength: 1 }), {
+            minLength: 1,
+            maxLength: 5,
+          }),
+          features: fc.array(
+            fc.record({
+              id: fc.string({ minLength: 1 }),
+              name: fc.string({ minLength: 1 }),
+              description: fc.option(fc.string(), { nil: undefined }),
+            }),
+            { minLength: 1, maxLength: 10 }
+          ),
+          rules: fc.array(
+            fc.record({
+              id: fc.string({ minLength: 1 }),
+              conditions: fc.array(
+                fc.record({
+                  attribute: fc.constantFrom(
+                    'plan',
+                    'region',
+                    'userId'
+                  ) as fc.Arbitrary<'plan' | 'region' | 'userId'>,
+                  operator: fc.constant('equals') as fc.Arbitrary<
+                    'equals' | 'in'
+                  >,
+                  value: fc.string({ minLength: 1 }),
+                }) as fc.Arbitrary<RuleCondition>,
+                { minLength: 1, maxLength: 3 }
+              ),
+              features: fc.array(fc.string({ minLength: 1 }), {
+                minLength: 1,
+                maxLength: 5,
+              }),
+            }),
+            { minLength: 0, maxLength: 5 }
+          ),
+        }),
+        async (config: FeatureFlagConfiguration) => {
+          const evaluator = new FeatureFlagEvaluator();
+
+          // Manually set configuration (simulating successful load)
+          (evaluator as any).configuration = config;
+          (evaluator as any).inputValidator.setConfiguration(config);
+          (evaluator as any).ruleEngine.setConfiguration(config);
+
+          const availableFeatures = evaluator.getAvailableFeatures();
+          const expectedFeatures = config.features.map(f => f.id).sort();
+
+          // Should return exactly the features defined in configuration
+          expect(availableFeatures).toEqual(expectedFeatures);
+          expect(availableFeatures.length).toBe(config.features.length);
+
+          // All returned features should be from the configuration
+          availableFeatures.forEach(feature => {
+            expect(config.features.some(f => f.id === feature)).toBe(true);
+          });
+        }
+      ),
+      { numRuns: 50 }
+    );
+  });
+
+  /**
+   * Property 20: Dynamic plan query accuracy
+   * For any loaded YAML configuration, querying for supported plans should return exactly
+   * the plan values defined in the configuration
+   * Validates: Requirements 5.3
+   */
+  test('Property 20: Dynamic plan query accuracy', async () => {
+    // Feature: feature-flag-evaluator, Property 20: Dynamic plan query accuracy
+    await fc.assert(
+      fc.asyncProperty(
+        fc.record({
+          supportedPlans: fc.array(fc.string({ minLength: 1 }), {
+            minLength: 1,
+            maxLength: 5,
+          }),
+          supportedRegions: fc.array(fc.string({ minLength: 1 }), {
+            minLength: 1,
+            maxLength: 5,
+          }),
+          features: fc.array(
+            fc.record({
+              id: fc.string({ minLength: 1 }),
+              name: fc.string({ minLength: 1 }),
+              description: fc.option(fc.string(), { nil: undefined }),
+            }),
+            { minLength: 1, maxLength: 5 }
+          ),
+          rules: fc.array(
+            fc.record({
+              id: fc.string({ minLength: 1 }),
+              conditions: fc.array(
+                fc.record({
+                  attribute: fc.constantFrom(
+                    'plan',
+                    'region',
+                    'userId'
+                  ) as fc.Arbitrary<'plan' | 'region' | 'userId'>,
+                  operator: fc.constant('equals') as fc.Arbitrary<
+                    'equals' | 'in'
+                  >,
+                  value: fc.string({ minLength: 1 }),
+                }) as fc.Arbitrary<RuleCondition>,
+                { minLength: 1, maxLength: 3 }
+              ),
+              features: fc.array(fc.string({ minLength: 1 }), {
+                minLength: 1,
+                maxLength: 5,
+              }),
+            }),
+            { minLength: 0, maxLength: 5 }
+          ),
+        }),
+        async (config: FeatureFlagConfiguration) => {
+          const evaluator = new FeatureFlagEvaluator();
+
+          // Manually set configuration (simulating successful load)
+          (evaluator as any).configuration = config;
+          (evaluator as any).inputValidator.setConfiguration(config);
+          (evaluator as any).ruleEngine.setConfiguration(config);
+
+          const supportedPlans = evaluator.getSupportedPlans();
+
+          // Should return exactly the plans defined in configuration
+          expect(supportedPlans).toEqual(config.supportedPlans);
+          expect(supportedPlans.length).toBe(config.supportedPlans.length);
+
+          // All returned plans should be from the configuration
+          supportedPlans.forEach(plan => {
+            expect(config.supportedPlans.includes(plan)).toBe(true);
+          });
+        }
+      ),
+      { numRuns: 50 }
+    );
+  });
+
+  /**
+   * Property 21: Dynamic region query accuracy
+   * For any loaded YAML configuration, querying for supported regions should return exactly
+   * the region values defined in the configuration
+   * Validates: Requirements 5.4
+   */
+  test('Property 21: Dynamic region query accuracy', async () => {
+    // Feature: feature-flag-evaluator, Property 21: Dynamic region query accuracy
+    await fc.assert(
+      fc.asyncProperty(
+        fc.record({
+          supportedPlans: fc.array(fc.string({ minLength: 1 }), {
+            minLength: 1,
+            maxLength: 5,
+          }),
+          supportedRegions: fc.array(fc.string({ minLength: 1 }), {
+            minLength: 1,
+            maxLength: 5,
+          }),
+          features: fc.array(
+            fc.record({
+              id: fc.string({ minLength: 1 }),
+              name: fc.string({ minLength: 1 }),
+              description: fc.option(fc.string(), { nil: undefined }),
+            }),
+            { minLength: 1, maxLength: 5 }
+          ),
+          rules: fc.array(
+            fc.record({
+              id: fc.string({ minLength: 1 }),
+              conditions: fc.array(
+                fc.record({
+                  attribute: fc.constantFrom(
+                    'plan',
+                    'region',
+                    'userId'
+                  ) as fc.Arbitrary<'plan' | 'region' | 'userId'>,
+                  operator: fc.constant('equals') as fc.Arbitrary<
+                    'equals' | 'in'
+                  >,
+                  value: fc.string({ minLength: 1 }),
+                }) as fc.Arbitrary<RuleCondition>,
+                { minLength: 1, maxLength: 3 }
+              ),
+              features: fc.array(fc.string({ minLength: 1 }), {
+                minLength: 1,
+                maxLength: 5,
+              }),
+            }),
+            { minLength: 0, maxLength: 5 }
+          ),
+        }),
+        async (config: FeatureFlagConfiguration) => {
+          const evaluator = new FeatureFlagEvaluator();
+
+          // Manually set configuration (simulating successful load)
+          (evaluator as any).configuration = config;
+          (evaluator as any).inputValidator.setConfiguration(config);
+          (evaluator as any).ruleEngine.setConfiguration(config);
+
+          const supportedRegions = evaluator.getSupportedRegions();
+
+          // Should return exactly the regions defined in configuration
+          expect(supportedRegions).toEqual(config.supportedRegions);
+          expect(supportedRegions.length).toBe(config.supportedRegions.length);
+
+          // All returned regions should be from the configuration
+          supportedRegions.forEach(region => {
+            expect(config.supportedRegions.includes(region)).toBe(true);
+          });
+        }
+      ),
+      { numRuns: 50 }
     );
   });
 });
