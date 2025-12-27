@@ -1,0 +1,379 @@
+# Feature Flag Configuration File
+# =====================================
+# 
+# This file defines the feature flag rules, supported plans, regions, and available features
+# for the Feature Flag Evaluator system. The evaluator loads this configuration at startup
+# and uses it to determine which features should be enabled for users based on their context.
+#
+# Configuration Structure:
+# - supportedPlans: List of valid subscription plans
+# - supportedRegions: List of valid geographical regions  
+# - features: Definitions of all available features with metadata
+# - rules: Logic that determines feature availability based on user attributes
+#
+# Rule Evaluation:
+# - Rules are evaluated in order and ALL matching rules apply
+# - The final feature list is the UNION of features from all matching rules
+# - Features are deduplicated and returned in alphabetical order
+#
+# Validation Requirements:
+# - All rule conditions must reference values from supportedPlans/supportedRegions
+# - All rule features must reference feature IDs defined in the features section
+# - Feature IDs must be unique across all feature definitions
+# - Plan and region values must be non-empty strings
+
+# Supported Subscription Plans
+# ============================
+# Define all valid subscription plan values that can be used in user context.
+# These values are case-sensitive and must match exactly in rule conditions.
+supportedPlans:
+  - Basic      # Entry-level plan with core features
+  - Pro        # Professional plan with advanced features
+  - Enterprise # Enterprise plan with full feature access
+  - Trial      # Trial plan with limited feature access
+
+# Supported Geographical Regions
+# ===============================
+# Define all valid region values that can be used in user context.
+# These typically correspond to geographical regions or regulatory jurisdictions.
+supportedRegions:
+  - US         # United States
+  - EU         # European Union
+  - APAC       # Asia-Pacific region
+  - CA         # Canada
+
+# Feature Definitions
+# ===================
+# Define all available features with their metadata. Each feature must have:
+# - id: Unique identifier used in rules and returned in evaluation results
+# - name: Human-readable display name
+# - description: Optional detailed description of the feature
+features:
+  # Core Dashboard Features
+  - id: basic-dashboard
+    name: Basic Dashboard
+    description: Standard dashboard with essential metrics and basic reporting capabilities
+
+  - id: advanced-dashboard
+    name: Advanced Dashboard
+    description: Enhanced dashboard with customizable widgets, advanced charts, and real-time data
+
+  - id: custom-dashboard
+    name: Custom Dashboard
+    description: Fully customizable dashboard with drag-and-drop widgets and personalized layouts
+
+  # Analytics and Reporting Features
+  - id: basic-analytics
+    name: Basic Analytics
+    description: Standard analytics with basic metrics, simple charts, and monthly reports
+
+  - id: advanced-analytics
+    name: Advanced Analytics
+    description: Comprehensive analytics with custom metrics, advanced visualizations, and real-time insights
+
+  - id: predictive-analytics
+    name: Predictive Analytics
+    description: AI-powered predictive analytics with forecasting and trend analysis
+
+  - id: data-export
+    name: Data Export
+    description: Export data in various formats (CSV, Excel, PDF) with scheduled exports
+
+  # API and Integration Features
+  - id: basic-api
+    name: Basic API Access
+    description: Limited API access with basic endpoints and rate limiting
+
+  - id: full-api
+    name: Full API Access
+    description: Complete API access with all endpoints, webhooks, and higher rate limits
+
+  - id: webhook-support
+    name: Webhook Support
+    description: Real-time webhook notifications for events and data changes
+
+  - id: third-party-integrations
+    name: Third-Party Integrations
+    description: Pre-built integrations with popular tools and services
+
+  # Support Features
+  - id: community-support
+    name: Community Support
+    description: Access to community forums and knowledge base
+
+  - id: email-support
+    name: Email Support
+    description: Email-based customer support during business hours
+
+  - id: priority-support
+    name: Priority Support
+    description: Priority email and chat support with faster response times
+
+  - id: phone-support
+    name: Phone Support
+    description: Direct phone support with dedicated account managers
+
+  # Security and Compliance Features
+  - id: basic-security
+    name: Basic Security
+    description: Standard security features including SSL, basic authentication, and audit logs
+
+  - id: advanced-security
+    name: Advanced Security
+    description: Enhanced security with SSO, 2FA, IP whitelisting, and advanced audit trails
+
+  - id: enterprise-security
+    name: Enterprise Security
+    description: Enterprise-grade security with SAML, custom roles, and compliance reporting
+
+  # Regional Compliance Features
+  - id: gdpr-compliance
+    name: GDPR Compliance
+    description: EU GDPR compliance tools including data portability, right to be forgotten, and consent management
+
+  - id: ccpa-compliance
+    name: CCPA Compliance
+    description: California Consumer Privacy Act compliance tools and data handling features
+
+  - id: hipaa-compliance
+    name: HIPAA Compliance
+    description: Healthcare data compliance features for handling protected health information
+
+  - id: sox-compliance
+    name: SOX Compliance
+    description: Sarbanes-Oxley compliance features for financial data handling and reporting
+
+  # Payment and Billing Features
+  - id: us-payment-gateway
+    name: US Payment Gateway
+    description: US-specific payment processing with support for major US payment methods
+
+  - id: eu-payment-gateway
+    name: EU Payment Gateway
+    description: EU-specific payment processing with SEPA support and local payment methods
+
+  - id: apac-payment-gateway
+    name: APAC Payment Gateway
+    description: Asia-Pacific payment processing with regional payment method support
+
+  - id: multi-currency
+    name: Multi-Currency Support
+    description: Support for multiple currencies with real-time exchange rates
+
+  # Collaboration Features
+  - id: team-collaboration
+    name: Team Collaboration
+    description: Basic team features including shared workspaces and user management
+
+  - id: advanced-collaboration
+    name: Advanced Collaboration
+    description: Enhanced collaboration with real-time editing, comments, and approval workflows
+
+  - id: guest-access
+    name: Guest Access
+    description: Allow external users limited access to specific features and data
+
+# Feature Flag Rules
+# ==================
+# Rules determine which features are enabled based on user attributes.
+# Each rule consists of:
+# - id: Unique identifier for the rule
+# - conditions: Array of conditions that must ALL be met for the rule to apply
+# - features: Array of feature IDs to enable when conditions are met
+#
+# Condition Structure:
+# - attribute: The user context field to check ('plan', 'region', or 'userId')
+# - operator: How to compare the value ('equals' or 'in')
+# - value: The value(s) to compare against (string for 'equals', array for 'in')
+#
+# Rule Evaluation Logic:
+# - ALL conditions within a rule must be satisfied for the rule to apply
+# - If multiple rules apply, their features are combined (union)
+# - Features are deduplicated and sorted alphabetically in the final result
+rules:
+  # Plan-Based Rules
+  # ================
+  # These rules grant features based on the user's subscription plan
+
+  - id: trial-plan-features
+    conditions:
+      - attribute: plan
+        operator: equals
+        value: Trial
+    features:
+      - basic-dashboard
+      - basic-analytics
+      - community-support
+      - basic-security
+
+  - id: basic-plan-features
+    conditions:
+      - attribute: plan
+        operator: equals
+        value: Basic
+    features:
+      - basic-dashboard
+      - basic-analytics
+      - basic-api
+      - email-support
+      - basic-security
+      - team-collaboration
+
+  - id: pro-plan-features
+    conditions:
+      - attribute: plan
+        operator: equals
+        value: Pro
+    features:
+      - advanced-dashboard
+      - advanced-analytics
+      - data-export
+      - full-api
+      - webhook-support
+      - priority-support
+      - advanced-security
+      - advanced-collaboration
+      - guest-access
+
+  - id: enterprise-plan-features
+    conditions:
+      - attribute: plan
+        operator: equals
+        value: Enterprise
+    features:
+      - custom-dashboard
+      - predictive-analytics
+      - data-export
+      - full-api
+      - webhook-support
+      - third-party-integrations
+      - phone-support
+      - enterprise-security
+      - advanced-collaboration
+      - guest-access
+      - multi-currency
+
+  # Region-Based Rules
+  # ==================
+  # These rules grant features based on the user's geographical region
+  # Often used for compliance, payment processing, and localization
+
+  - id: us-region-features
+    conditions:
+      - attribute: region
+        operator: equals
+        value: US
+    features:
+      - us-payment-gateway
+      - ccpa-compliance
+      - sox-compliance
+
+  - id: eu-region-features
+    conditions:
+      - attribute: region
+        operator: equals
+        value: EU
+    features:
+      - eu-payment-gateway
+      - gdpr-compliance
+
+  - id: apac-region-features
+    conditions:
+      - attribute: region
+        operator: equals
+        value: APAC
+    features:
+      - apac-payment-gateway
+
+  - id: ca-region-features
+    conditions:
+      - attribute: region
+        operator: equals
+        value: CA
+    features:
+      - us-payment-gateway  # Canada uses US payment gateway
+      - ccpa-compliance     # Similar privacy requirements
+
+  # Combined Condition Rules
+  # ========================
+  # These rules demonstrate multiple conditions that must ALL be satisfied
+  # Useful for region-specific plan features or special combinations
+
+  - id: eu-enterprise-compliance
+    conditions:
+      - attribute: region
+        operator: equals
+        value: EU
+      - attribute: plan
+        operator: equals
+        value: Enterprise
+    features:
+      - hipaa-compliance    # Additional compliance for EU enterprise customers
+
+  - id: us-healthcare-compliance
+    conditions:
+      - attribute: region
+        operator: equals
+        value: US
+      - attribute: plan
+        operator: in
+        value: [Pro, Enterprise]  # Available to Pro and Enterprise plans
+    features:
+      - hipaa-compliance
+
+  # Multi-Value Condition Rules
+  # ===========================
+  # These rules demonstrate the 'in' operator for matching multiple values
+  # Useful when the same features apply to multiple plans or regions
+
+  - id: premium-plans-bonus-features
+    conditions:
+      - attribute: plan
+        operator: in
+        value: [Pro, Enterprise]
+    features:
+      - advanced-collaboration
+      - priority-support
+
+  - id: north-america-features
+    conditions:
+      - attribute: region
+        operator: in
+        value: [US, CA]
+    features:
+      - sox-compliance      # North American financial compliance
+
+# Configuration Validation Notes
+# ===============================
+# The system validates this configuration on load:
+#
+# 1. Structural Validation:
+#    - All required sections (supportedPlans, supportedRegions, features, rules) must be present
+#    - Each feature must have 'id' and 'name' fields
+#    - Each rule must have 'id', 'conditions', and 'features' fields
+#    - Each condition must have 'attribute', 'operator', and 'value' fields
+#
+# 2. Referential Integrity:
+#    - All rule condition values must exist in supportedPlans/supportedRegions
+#    - All rule feature references must exist in the features section
+#    - Feature IDs must be unique
+#
+# 3. Value Validation:
+#    - Plan and region values must be non-empty strings
+#    - Operators must be 'equals' or 'in'
+#    - Attributes must be 'plan', 'region', or 'userId'
+#
+# Example Usage:
+# ==============
+# User Context: { userId: "user123", region: "US", plan: "Pro" }
+# 
+# Matching Rules:
+# - pro-plan-features (plan = Pro)
+# - us-region-features (region = US)
+# - premium-plans-bonus-features (plan in [Pro, Enterprise])
+# - us-healthcare-compliance (region = US AND plan in [Pro, Enterprise])
+#
+# Final Features (union of all matching rules):
+# - advanced-dashboard, advanced-analytics, data-export, full-api, webhook-support,
+#   priority-support, advanced-security, advanced-collaboration, guest-access,
+#   us-payment-gateway, ccpa-compliance, sox-compliance, hipaa-compliance

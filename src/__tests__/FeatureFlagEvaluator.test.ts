@@ -3,13 +3,104 @@
  */
 
 import { FeatureFlagEvaluator } from '../FeatureFlagEvaluator';
-import { UserContext, EvaluationResult } from '../types';
+import {
+  UserContext,
+  EvaluationResult,
+  FeatureFlagConfiguration,
+} from '../types';
 
 describe('FeatureFlagEvaluator', () => {
   let evaluator: FeatureFlagEvaluator;
+  let testConfiguration: FeatureFlagConfiguration;
 
   beforeEach(() => {
     evaluator = new FeatureFlagEvaluator();
+
+    // Set up test configuration
+    testConfiguration = {
+      supportedPlans: ['Basic', 'Pro'],
+      supportedRegions: ['US', 'EU'],
+      features: [
+        {
+          id: 'advanced-analytics',
+          name: 'Advanced Analytics',
+          description: 'Advanced reporting features',
+        },
+        {
+          id: 'premium-support',
+          name: 'Premium Support',
+          description: '24/7 premium support',
+        },
+        {
+          id: 'api-access',
+          name: 'API Access',
+          description: 'Full REST API access',
+        },
+        {
+          id: 'basic-dashboard',
+          name: 'Basic Dashboard',
+          description: 'Standard dashboard',
+        },
+        {
+          id: 'standard-support',
+          name: 'Standard Support',
+          description: 'Business hours support',
+        },
+        {
+          id: 'us-payment-gateway',
+          name: 'US Payment Gateway',
+          description: 'US payment processing',
+        },
+        {
+          id: 'eu-payment-gateway',
+          name: 'EU Payment Gateway',
+          description: 'EU payment processing',
+        },
+        {
+          id: 'gdpr-tools',
+          name: 'GDPR Tools',
+          description: 'EU GDPR compliance features',
+        },
+        {
+          id: 'us-compliance-tools',
+          name: 'US Compliance Tools',
+          description: 'US regulatory compliance features',
+        },
+      ],
+      rules: [
+        {
+          id: 'pro-plan-features',
+          conditions: [{ attribute: 'plan', operator: 'equals', value: 'Pro' }],
+          features: ['advanced-analytics', 'premium-support', 'api-access'],
+        },
+        {
+          id: 'basic-plan-features',
+          conditions: [
+            { attribute: 'plan', operator: 'equals', value: 'Basic' },
+          ],
+          features: ['basic-dashboard', 'standard-support'],
+        },
+        {
+          id: 'us-region-features',
+          conditions: [
+            { attribute: 'region', operator: 'equals', value: 'US' },
+          ],
+          features: ['us-payment-gateway', 'us-compliance-tools'],
+        },
+        {
+          id: 'eu-region-features',
+          conditions: [
+            { attribute: 'region', operator: 'equals', value: 'EU' },
+          ],
+          features: ['eu-payment-gateway', 'gdpr-tools'],
+        },
+      ],
+    };
+
+    // Load configuration into evaluator
+    (evaluator as any).configuration = testConfiguration;
+    (evaluator as any).inputValidator.setConfiguration(testConfiguration);
+    (evaluator as any).ruleEngine.setConfiguration(testConfiguration);
   });
 
   describe('evaluate', () => {
@@ -100,6 +191,23 @@ describe('FeatureFlagEvaluator', () => {
       expect(result.features).toBeUndefined();
     });
 
+    it('should return error when configuration is not loaded', () => {
+      const freshEvaluator = new FeatureFlagEvaluator();
+      const context: UserContext = {
+        userId: 'user123',
+        region: 'US',
+        plan: 'Pro',
+      };
+
+      const result: EvaluationResult = freshEvaluator.evaluate(context);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe(
+        'Configuration not loaded - call loadConfiguration first'
+      );
+      expect(result.features).toBeUndefined();
+    });
+
     it('should return features in sorted order', () => {
       const context: UserContext = {
         userId: 'user123',
@@ -140,7 +248,7 @@ describe('FeatureFlagEvaluator', () => {
       const features = evaluator.getAvailableFeatures();
 
       expect(features).toBeDefined();
-      expect(features.length).toBe(9); // Total number of features in ALL_FEATURES
+      expect(features.length).toBe(9); // Total number of features in test configuration
 
       // Test that all expected features are present
       const expectedFeatures = [
@@ -163,6 +271,12 @@ describe('FeatureFlagEvaluator', () => {
       const sortedFeatures = [...features].sort();
       expect(features).toEqual(sortedFeatures);
     });
+
+    it('should return empty array when configuration is not loaded', () => {
+      const freshEvaluator = new FeatureFlagEvaluator();
+      const features = freshEvaluator.getAvailableFeatures();
+      expect(features).toEqual([]);
+    });
   });
 
   describe('getSupportedPlans', () => {
@@ -172,6 +286,12 @@ describe('FeatureFlagEvaluator', () => {
       expect(plans).toBeDefined();
       expect(plans).toEqual(['Basic', 'Pro']);
     });
+
+    it('should return empty array when configuration is not loaded', () => {
+      const freshEvaluator = new FeatureFlagEvaluator();
+      const plans = freshEvaluator.getSupportedPlans();
+      expect(plans).toEqual([]);
+    });
   });
 
   describe('getSupportedRegions', () => {
@@ -180,6 +300,12 @@ describe('FeatureFlagEvaluator', () => {
 
       expect(regions).toBeDefined();
       expect(regions).toEqual(['US', 'EU']);
+    });
+
+    it('should return empty array when configuration is not loaded', () => {
+      const freshEvaluator = new FeatureFlagEvaluator();
+      const regions = freshEvaluator.getSupportedRegions();
+      expect(regions).toEqual([]);
     });
   });
 

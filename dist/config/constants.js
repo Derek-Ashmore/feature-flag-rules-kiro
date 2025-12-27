@@ -1,18 +1,24 @@
 "use strict";
 /**
- * Static configuration constants for the feature flag evaluator
+ * Legacy static configuration constants for the feature flag evaluator
+ *
+ * These constants are kept for backward compatibility with existing tests
+ * but should not be used in new code. Use dynamic configuration loading instead.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FEATURE_RULES = exports.ALL_FEATURES = exports.SUPPORTED_REGIONS = exports.SUPPORTED_PLANS = void 0;
 /**
+ * @deprecated Use dynamic configuration loading instead
  * Supported user plans
  */
 exports.SUPPORTED_PLANS = ['Basic', 'Pro'];
 /**
+ * @deprecated Use dynamic configuration loading instead
  * Supported regions
  */
 exports.SUPPORTED_REGIONS = ['US', 'EU'];
 /**
+ * @deprecated Use dynamic configuration loading instead
  * All available features in the system
  */
 exports.ALL_FEATURES = [
@@ -27,6 +33,7 @@ exports.ALL_FEATURES = [
     'us-payment-gateway',
 ];
 /**
+ * @deprecated Use dynamic configuration loading instead
  * Static feature rules that map user attributes to features
  */
 exports.FEATURE_RULES = [

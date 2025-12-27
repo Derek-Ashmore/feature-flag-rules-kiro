@@ -1,7 +1,7 @@
 /**
  * Rule Engine for Feature Flag Evaluator
  *
- * This component is responsible for evaluating static rules against user context
+ * This component is responsible for evaluating loaded rules against user context
  * and determining which features should be enabled based on matching conditions.
  */
 
@@ -10,18 +10,26 @@ import {
   UserContext,
   FeatureRule,
   RuleCondition,
+  FeatureFlagConfiguration,
 } from '../types';
-import { FEATURE_RULES } from '../config/constants';
 
 /**
  * Implementation of the rule engine that evaluates feature rules
  * against user context to determine enabled features.
  */
 export class RuleEngine implements IRuleEngine {
-  private readonly rules: FeatureRule[];
+  private configuration?: FeatureFlagConfiguration;
 
-  constructor(rules: FeatureRule[] = FEATURE_RULES) {
-    this.rules = rules;
+  constructor(configuration?: FeatureFlagConfiguration) {
+    this.configuration = configuration;
+  }
+
+  /**
+   * Sets the configuration to use for rule evaluation
+   * @param configuration The loaded feature flag configuration
+   */
+  setConfiguration(configuration: FeatureFlagConfiguration): void {
+    this.configuration = configuration;
   }
 
   /**
@@ -32,10 +40,14 @@ export class RuleEngine implements IRuleEngine {
    * @returns Array of feature identifiers that should be enabled
    */
   evaluateRules(context: UserContext): string[] {
+    if (!this.configuration) {
+      throw new Error('Configuration not loaded - call setConfiguration first');
+    }
+
     const enabledFeatures = new Set<string>();
 
     // Evaluate each rule and collect features from matching rules
-    for (const rule of this.rules) {
+    for (const rule of this.configuration.rules) {
       if (this.ruleMatches(rule, context)) {
         // Add all features from this rule to the set
         rule.features.forEach(feature => enabledFeatures.add(feature));

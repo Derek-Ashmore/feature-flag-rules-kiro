@@ -9,6 +9,12 @@ exports.EvaluationError = void 0;
  */
 var EvaluationError;
 (function (EvaluationError) {
+    // Configuration errors
+    EvaluationError["CONFIG_FILE_NOT_FOUND"] = "Configuration file not found";
+    EvaluationError["CONFIG_PARSE_ERROR"] = "Failed to parse YAML configuration";
+    EvaluationError["CONFIG_VALIDATION_ERROR"] = "Configuration validation failed";
+    EvaluationError["CONFIG_NOT_LOADED"] = "Configuration not loaded - call loadConfiguration first";
+    // Input validation errors
     EvaluationError["MISSING_CONTEXT"] = "Missing or null user context";
     EvaluationError["INVALID_USER_ID"] = "Invalid or empty userId";
     EvaluationError["UNSUPPORTED_REGION"] = "Unsupported region";

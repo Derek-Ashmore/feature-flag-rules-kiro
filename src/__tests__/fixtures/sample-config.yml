@@ -1,0 +1,77 @@
+# Sample Feature Flag Configuration
+# This file demonstrates the expected YAML structure for feature flag rules
+
+supportedPlans:
+  - Basic
+  - Pro
+
+supportedRegions:
+  - US
+  - EU
+
+features:
+  - id: advanced-analytics
+    name: Advanced Analytics
+    description: Advanced reporting and analytics features
+  - id: premium-support
+    name: Premium Support
+    description: 24/7 premium customer support
+  - id: api-access
+    name: API Access
+    description: Full REST API access
+  - id: basic-dashboard
+    name: Basic Dashboard
+    description: Standard dashboard functionality
+  - id: standard-support
+    name: Standard Support
+    description: Business hours customer support
+  - id: us-payment-gateway
+    name: US Payment Gateway
+    description: US-specific payment processing
+  - id: us-compliance-tools
+    name: US Compliance Tools
+    description: US regulatory compliance features
+  - id: gdpr-tools
+    name: GDPR Tools
+    description: EU GDPR compliance features
+  - id: eu-payment-gateway
+    name: EU Payment Gateway
+    description: EU-specific payment processing
+
+rules:
+  - id: pro-plan-features
+    conditions:
+      - attribute: plan
+        operator: equals
+        value: Pro
+    features:
+      - advanced-analytics
+      - premium-support
+      - api-access
+  
+  - id: basic-plan-features
+    conditions:
+      - attribute: plan
+        operator: equals
+        value: Basic
+    features:
+      - basic-dashboard
+      - standard-support
+  
+  - id: us-region-features
+    conditions:
+      - attribute: region
+        operator: equals
+        value: US
+    features:
+      - us-payment-gateway
+      - us-compliance-tools
+  
+  - id: eu-region-features
+    conditions:
+      - attribute: region
+        operator: equals
+        value: EU
+    features:
+      - gdpr-tools
+      - eu-payment-gateway

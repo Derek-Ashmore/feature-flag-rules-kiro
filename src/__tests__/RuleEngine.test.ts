@@ -6,13 +6,67 @@
  */
 
 import { RuleEngine } from '../engine/RuleEngine';
-import { UserContext, FeatureRule } from '../types';
+import {
+  UserContext,
+  FeatureRule,
+  FeatureFlagConfiguration,
+  FeatureDefinition,
+} from '../types';
 
 describe('RuleEngine Unit Tests', () => {
   let ruleEngine: RuleEngine;
+  let testConfiguration: FeatureFlagConfiguration;
 
   beforeEach(() => {
+    // Create a test configuration that matches the static configuration
+    const features: FeatureDefinition[] = [
+      { id: 'advanced-analytics', name: 'Advanced Analytics' },
+      { id: 'premium-support', name: 'Premium Support' },
+      { id: 'api-access', name: 'API Access' },
+      { id: 'basic-dashboard', name: 'Basic Dashboard' },
+      { id: 'standard-support', name: 'Standard Support' },
+      { id: 'us-payment-gateway', name: 'US Payment Gateway' },
+      { id: 'us-compliance-tools', name: 'US Compliance Tools' },
+      { id: 'gdpr-tools', name: 'GDPR Tools' },
+      { id: 'eu-payment-gateway', name: 'EU Payment Gateway' },
+    ];
+
+    testConfiguration = {
+      supportedPlans: ['Basic', 'Pro'],
+      supportedRegions: ['US', 'EU'],
+      features,
+      rules: [
+        {
+          id: 'pro-plan-features',
+          conditions: [{ attribute: 'plan', operator: 'equals', value: 'Pro' }],
+          features: ['advanced-analytics', 'premium-support', 'api-access'],
+        },
+        {
+          id: 'basic-plan-features',
+          conditions: [
+            { attribute: 'plan', operator: 'equals', value: 'Basic' },
+          ],
+          features: ['basic-dashboard', 'standard-support'],
+        },
+        {
+          id: 'us-region-features',
+          conditions: [
+            { attribute: 'region', operator: 'equals', value: 'US' },
+          ],
+          features: ['us-payment-gateway', 'us-compliance-tools'],
+        },
+        {
+          id: 'eu-region-features',
+          conditions: [
+            { attribute: 'region', operator: 'equals', value: 'EU' },
+          ],
+          features: ['gdpr-tools', 'eu-payment-gateway'],
+        },
+      ],
+    };
+
     ruleEngine = new RuleEngine();
+    ruleEngine.setConfiguration(testConfiguration);
   });
 
   describe('Individual rule matching logic', () => {
@@ -98,7 +152,13 @@ describe('RuleEngine Unit Tests', () => {
         },
       ];
 
-      const testEngine = new RuleEngine(testRules);
+      const customConfiguration = {
+        ...testConfiguration,
+        rules: testRules,
+      };
+
+      const testEngine = new RuleEngine();
+      testEngine.setConfiguration(customConfiguration);
 
       const context: UserContext = {
         userId: 'user123',
@@ -124,7 +184,13 @@ describe('RuleEngine Unit Tests', () => {
         },
       ];
 
-      const testEngine = new RuleEngine(testRules);
+      const customConfiguration = {
+        ...testConfiguration,
+        rules: testRules,
+      };
+
+      const testEngine = new RuleEngine();
+      testEngine.setConfiguration(customConfiguration);
 
       const context: UserContext = {
         userId: 'user123',
@@ -267,7 +333,13 @@ describe('RuleEngine Unit Tests', () => {
         },
       ];
 
-      const testEngine = new RuleEngine(testRules);
+      const customConfiguration = {
+        ...testConfiguration,
+        rules: testRules,
+      };
+
+      const testEngine = new RuleEngine();
+      testEngine.setConfiguration(customConfiguration);
 
       const context: UserContext = {
         userId: 'user123',
@@ -323,7 +395,13 @@ describe('RuleEngine Unit Tests', () => {
         },
       ];
 
-      const testEngine = new RuleEngine(testRules);
+      const customConfiguration = {
+        ...testConfiguration,
+        rules: testRules,
+      };
+
+      const testEngine = new RuleEngine();
+      testEngine.setConfiguration(customConfiguration);
 
       // Test context that matches both rules
       const matchingContext: UserContext = {
@@ -369,7 +447,13 @@ describe('RuleEngine Unit Tests', () => {
         },
       ];
 
-      const testEngine = new RuleEngine(testRules);
+      const customConfiguration = {
+        ...testConfiguration,
+        rules: testRules,
+      };
+
+      const testEngine = new RuleEngine();
+      testEngine.setConfiguration(customConfiguration);
 
       // Test US region (should match multi-region rule)
       const usContext: UserContext = {
@@ -409,7 +493,13 @@ describe('RuleEngine Unit Tests', () => {
         },
       ];
 
-      const testEngine = new RuleEngine(testRules);
+      const customConfiguration = {
+        ...testConfiguration,
+        rules: testRules,
+      };
+
+      const testEngine = new RuleEngine();
+      testEngine.setConfiguration(customConfiguration);
 
       const context: UserContext = {
         userId: 'user123',
@@ -422,7 +512,13 @@ describe('RuleEngine Unit Tests', () => {
     });
 
     test('should handle empty rules array', () => {
-      const emptyEngine = new RuleEngine([]);
+      const customConfiguration = {
+        ...testConfiguration,
+        rules: [],
+      };
+
+      const emptyEngine = new RuleEngine();
+      emptyEngine.setConfiguration(customConfiguration);
 
       const context: UserContext = {
         userId: 'user123',
@@ -443,7 +539,13 @@ describe('RuleEngine Unit Tests', () => {
         },
       ];
 
-      const testEngine = new RuleEngine(testRules);
+      const customConfiguration = {
+        ...testConfiguration,
+        rules: testRules,
+      };
+
+      const testEngine = new RuleEngine();
+      testEngine.setConfiguration(customConfiguration);
 
       const context: UserContext = {
         userId: 'user123',
@@ -453,6 +555,20 @@ describe('RuleEngine Unit Tests', () => {
 
       const features = testEngine.evaluateRules(context);
       expect(features).toEqual([]);
+    });
+
+    test('should throw error when configuration is not set', () => {
+      const engineWithoutConfig = new RuleEngine();
+
+      const context: UserContext = {
+        userId: 'user123',
+        region: 'US',
+        plan: 'Pro',
+      };
+
+      expect(() => {
+        engineWithoutConfig.evaluateRules(context);
+      }).toThrow('Configuration not loaded - call setConfiguration first');
     });
   });
 });
