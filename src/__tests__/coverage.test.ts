@@ -55,7 +55,9 @@ describe('Coverage Tests', () => {
     });
 
     test('should have proper rule structure', () => {
-      const proRule = rules.FEATURE_RULES.find(r => r.id === 'pro-plan-features');
+      const proRule = rules.FEATURE_RULES.find(
+        r => r.id === 'pro-plan-features'
+      );
       expect(proRule).toBeDefined();
       expect(proRule?.conditions).toHaveLength(1);
       expect(proRule?.features).toContain('advanced-analytics');
@@ -77,7 +79,11 @@ describe('Coverage Tests', () => {
 
     test('should handle invalid YAML syntax', async () => {
       // Create a temporary invalid YAML file
-      const invalidYamlPath = path.join(__dirname, 'fixtures', 'invalid-syntax.yml');
+      const invalidYamlPath = path.join(
+        __dirname,
+        'fixtures',
+        'invalid-syntax.yml'
+      );
       const invalidYaml = `
 supportedPlans:
   - Basic
@@ -103,7 +109,7 @@ invalid: [unclosed array
         supportedPlans: [],
         supportedRegions: ['US'],
         features: [{ id: 'test', name: 'Test' }],
-        rules: []
+        rules: [],
       };
 
       const result = loader.validateConfiguration(config);
@@ -116,7 +122,7 @@ invalid: [unclosed array
         supportedPlans: ['Basic'],
         supportedRegions: [],
         features: [{ id: 'test', name: 'Test' }],
-        rules: []
+        rules: [],
       };
 
       const result = loader.validateConfiguration(config);
@@ -129,7 +135,7 @@ invalid: [unclosed array
         supportedPlans: ['Basic'],
         supportedRegions: ['US'],
         features: [],
-        rules: []
+        rules: [],
       };
 
       const result = loader.validateConfiguration(config);
@@ -141,15 +147,15 @@ invalid: [unclosed array
       const config = {
         supportedPlans: ['Basic'],
         supportedRegions: ['US'],
-        features: [
-          { id: 'test', name: 'Test', description: '' }
-        ],
-        rules: []
+        features: [{ id: 'test', name: 'Test', description: '' }],
+        rules: [],
       };
 
       const result = loader.validateConfiguration(config);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Feature test description must be a non-empty string if provided');
+      expect(result.errors).toContain(
+        'Feature test description must be a non-empty string if provided'
+      );
     });
 
     test('should validate rule with empty conditions', () => {
@@ -161,14 +167,16 @@ invalid: [unclosed array
           {
             id: 'test-rule',
             conditions: [],
-            features: ['test']
-          }
-        ]
+            features: ['test'],
+          },
+        ],
       };
 
       const result = loader.validateConfiguration(config);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Rule test-rule must have non-empty conditions array');
+      expect(result.errors).toContain(
+        'Rule test-rule must have non-empty conditions array'
+      );
     });
 
     test('should validate rule with empty features', () => {
@@ -179,15 +187,19 @@ invalid: [unclosed array
         rules: [
           {
             id: 'test-rule',
-            conditions: [{ attribute: 'plan', operator: 'equals', value: 'Basic' }],
-            features: []
-          }
-        ]
+            conditions: [
+              { attribute: 'plan', operator: 'equals', value: 'Basic' },
+            ],
+            features: [],
+          },
+        ],
       };
 
       const result = loader.validateConfiguration(config);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Rule test-rule must have non-empty features array');
+      expect(result.errors).toContain(
+        'Rule test-rule must have non-empty features array'
+      );
     });
   });
 
@@ -203,13 +215,19 @@ invalid: [unclosed array
         rules: [
           {
             id: 'test-rule',
-            conditions: [{ attribute: 'plan' as const, operator: 'equals' as const, value: 'Enterprise' }],
-            features: ['enterprise-feature']
-          }
+            conditions: [
+              {
+                attribute: 'plan' as const,
+                operator: 'equals' as const,
+                value: 'Enterprise',
+              },
+            ],
+            features: ['enterprise-feature'],
+          },
         ],
         supportedPlans: ['Basic', 'Pro', 'Enterprise'],
         supportedRegions: ['US', 'EU'],
-        features: [{ id: 'enterprise-feature', name: 'Enterprise Feature' }]
+        features: [{ id: 'enterprise-feature', name: 'Enterprise Feature' }],
       };
 
       engine.setConfiguration(configuration);
@@ -217,7 +235,7 @@ invalid: [unclosed array
       const context: UserContext = {
         userId: 'user1',
         plan: 'Basic',
-        region: 'US'
+        region: 'US',
       };
 
       const result = engine.evaluateRules(context);
@@ -230,15 +248,23 @@ invalid: [unclosed array
           {
             id: 'complex-rule',
             conditions: [
-              { attribute: 'plan' as const, operator: 'equals' as const, value: 'Pro' },
-              { attribute: 'region' as const, operator: 'equals' as const, value: 'EU' }
+              {
+                attribute: 'plan' as const,
+                operator: 'equals' as const,
+                value: 'Pro',
+              },
+              {
+                attribute: 'region' as const,
+                operator: 'equals' as const,
+                value: 'EU',
+              },
             ],
-            features: ['complex-feature']
-          }
+            features: ['complex-feature'],
+          },
         ],
         supportedPlans: ['Basic', 'Pro'],
         supportedRegions: ['US', 'EU'],
-        features: [{ id: 'complex-feature', name: 'Complex Feature' }]
+        features: [{ id: 'complex-feature', name: 'Complex Feature' }],
       };
 
       engine.setConfiguration(configuration);
@@ -246,7 +272,7 @@ invalid: [unclosed array
       const context: UserContext = {
         userId: 'user1',
         plan: 'Pro',
-        region: 'US' // Different region
+        region: 'US', // Different region
       };
 
       const result = engine.evaluateRules(context);
@@ -258,13 +284,19 @@ invalid: [unclosed array
         rules: [
           {
             id: 'user-specific-rule',
-            conditions: [{ attribute: 'userId' as const, operator: 'equals' as const, value: 'special-user' }],
-            features: ['special-feature']
-          }
+            conditions: [
+              {
+                attribute: 'userId' as const,
+                operator: 'equals' as const,
+                value: 'special-user',
+              },
+            ],
+            features: ['special-feature'],
+          },
         ],
         supportedPlans: ['Basic', 'Pro'],
         supportedRegions: ['US', 'EU'],
-        features: [{ id: 'special-feature', name: 'Special Feature' }]
+        features: [{ id: 'special-feature', name: 'Special Feature' }],
       };
 
       engine.setConfiguration(configuration);
@@ -272,7 +304,7 @@ invalid: [unclosed array
       const context: UserContext = {
         userId: 'special-user',
         plan: 'Basic',
-        region: 'US'
+        region: 'US',
       };
 
       const result = engine.evaluateRules(context);
@@ -283,10 +315,12 @@ invalid: [unclosed array
       const context: UserContext = {
         userId: 'user1',
         plan: 'Basic',
-        region: 'US'
+        region: 'US',
       };
 
-      expect(() => engine.evaluateRules(context)).toThrow('Configuration not loaded');
+      expect(() => engine.evaluateRules(context)).toThrow(
+        'Configuration not loaded'
+      );
     });
   });
 
@@ -301,7 +335,7 @@ invalid: [unclosed array
       const context: UserContext = {
         userId: 'user1',
         plan: 'Basic',
-        region: 'US'
+        region: 'US',
       };
 
       const result = evaluator.evaluate(context);
