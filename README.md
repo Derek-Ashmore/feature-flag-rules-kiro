@@ -6,6 +6,28 @@ A minimal feature flag evaluator that determines which features should be enable
 
 This project demonstrates spec-driven development using the [Kiro](https://kiro.dev/) IDE. All features are specified before implementation, ensuring clear requirements and testable behavior.
 
+## Development Journey with Kiro
+
+This project was built incrementally using Kiro's spec-driven development approach. Each major milestone is tagged in the repository to show the evolution from initial concept to full implementation.
+
+| Tag | Description | Key Deliverables |
+|-----|-------------|------------------|
+| [1_kiro_setup](../../tree/1_kiro_setup) | Initialize Kiro | Project structure, steering documents, and Kiro IDE configuration |
+| [2_init_design_plan](../../tree/2_init_design_plan) | Specify initial functionality with design and plan | Requirements document, design specification, and implementation task list for core feature flag evaluation |
+| [3_init_implementation](../../tree/3_init_implementation) | Implement initial functionality | Core TypeScript implementation with comprehensive unit and property-based tests |
+| [4_config_design_plan](../../tree/4_config_design_plan) | Specify configuration file enhancement with design and plan | Enhanced requirements, design for YAML configuration support, and updated task list |
+| [5_config_implement](../../tree/5_config_implement) | Implement configuration file enhancement | YAML configuration loading, validation, and integration with existing evaluation engine |
+
+### Spec-Driven Development Benefits
+
+This approach demonstrated several key advantages:
+
+- **Clear Requirements**: Each feature was fully specified before any code was written
+- **Testable Design**: Property-based testing ensured correctness across all input combinations  
+- **Incremental Progress**: Features were built in logical, reviewable chunks
+- **Quality Assurance**: Comprehensive test coverage was planned and implemented from the start
+- **Documentation**: The development process itself serves as living documentation
+
 ## What it is
 A minimal feature flag evaluator.
 
