@@ -2,15 +2,17 @@
 
 ## Introduction
 
-A minimal feature flag evaluator that determines which features should be enabled for users based on their context (userId, region, plan). The system uses static rules to make feature flag decisions, providing a foundation for controlled feature rollouts and user-specific feature access.
+A minimal feature flag evaluator that determines which features should be enabled for users based on their context (userId, region, plan). The system loads feature rules from YAML configuration files, providing a data-driven foundation for controlled feature rollouts and user-specific feature access without requiring code changes.
 
 ## Glossary
 
 - **Feature_Flag_Evaluator**: The core system that processes user context and returns enabled features
 - **User_Context**: Input data containing userId, region, and plan information
-- **Feature_Rule**: A static rule that determines feature availability based on user attributes
+- **Feature_Rule**: A rule that determines feature availability based on user attributes, loaded from YAML configuration
 - **Enabled_Features**: The list of feature identifiers that should be active for a given user
 - **Feature_Identifier**: A unique string that identifies a specific feature (e.g., "advanced-analytics", "premium-support")
+- **YAML_Configuration_Loader**: Component that loads and parses YAML configuration files containing feature rules
+- **Configuration_File**: YAML file containing feature rules, supported plans, regions, and feature definitions
 
 ## Requirements
 
@@ -50,19 +52,31 @@ A minimal feature flag evaluator that determines which features should be enable
 4. WHEN the plan is not in the supported plans list, THE Feature_Flag_Evaluator SHALL return an error indicating unsupported plan
 5. THE Feature_Flag_Evaluator SHALL validate all input fields before processing any rules
 
-### Requirement 4: Feature Rule Configuration
+### Requirement 4: YAML Configuration Loading
 
-**User Story:** As a developer, I want to understand the available feature rules, so that I can predict system behavior and integrate effectively.
+**User Story:** As a system administrator, I want to load feature flag rules from a YAML configuration file, so that I can modify feature availability without code changes.
 
 #### Acceptance Criteria
 
-1. THE Feature_Flag_Evaluator SHALL support a predefined set of Feature_Rules that map plan and region combinations to features
-2. WHEN queried for available features, THE Feature_Flag_Evaluator SHALL return a list of all possible Feature_Identifiers
-3. WHEN queried for supported plans, THE Feature_Flag_Evaluator SHALL return ["Basic", "Pro"]
-4. WHEN queried for supported regions, THE Feature_Flag_Evaluator SHALL return ["US", "EU"]
-5. THE Feature_Flag_Evaluator SHALL maintain consistent rule application across all evaluations
+1. WHEN a valid YAML configuration file is provided, THE Feature_Flag_Evaluator SHALL load and parse the configuration into Feature_Rules
+2. WHEN the YAML configuration file is missing or unreadable, THE Feature_Flag_Evaluator SHALL return an error indicating configuration loading failure
+3. WHEN the YAML configuration contains invalid syntax, THE Feature_Flag_Evaluator SHALL return an error with specific parsing details
+4. WHEN the YAML configuration contains invalid rule structure, THE Feature_Flag_Evaluator SHALL return an error indicating invalid rule format
+5. THE Feature_Flag_Evaluator SHALL validate that all referenced features, plans, and regions in the YAML are properly defined
 
-### Requirement 5: Output Format
+### Requirement 5: Dynamic Feature Rule Configuration
+
+**User Story:** As a developer, I want to understand the available feature rules from the loaded configuration, so that I can predict system behavior and integrate effectively.
+
+#### Acceptance Criteria
+
+1. THE Feature_Flag_Evaluator SHALL support Feature_Rules loaded from YAML configuration that map plan and region combinations to features
+2. WHEN queried for available features, THE Feature_Flag_Evaluator SHALL return a list of all Feature_Identifiers defined in the loaded configuration
+3. WHEN queried for supported plans, THE Feature_Flag_Evaluator SHALL return all plan values defined in the loaded configuration
+4. WHEN queried for supported regions, THE Feature_Flag_Evaluator SHALL return all region values defined in the loaded configuration
+5. THE Feature_Flag_Evaluator SHALL maintain consistent rule application across all evaluations using the loaded configuration
+
+### Requirement 6: Output Format
 
 **User Story:** As an API consumer, I want consistent output format, so that I can reliably parse and use the evaluation results.
 
